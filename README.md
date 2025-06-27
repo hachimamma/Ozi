@@ -1,6 +1,6 @@
 # Ozi Discord Bot
 
-![Ozi Banner](https://raw.githubusercontent.com/multivariablecalculus/Ozi/main/assets/banner.png) <!-- Customize or remove this line if you don't have a banner image -->
+![Ozi Banner](assets/banner.jpg)
 
 Ozi is a multipurpose Discord bot written in Rust using [Poise](https://github.com/serenity-rs/poise) and [Serenity](https://github.com/serenity-rs/serenity), featuring slash commands, weather integration, and more. Simple, extensible, and focused on performance!
 
@@ -14,7 +14,7 @@ Ozi is a multipurpose Discord bot written in Rust using [Poise](https://github.c
 - 🌦 **Weather Info**  
   Get real-time weather updates using the OpenWeather API.
 
-- 🏓 **Ping & Uptime**  
+- 🏓 **Ping & Uptime**
   Check bot latency and uptime.
 
 - ⚡ **Fast & Lightweight**  
