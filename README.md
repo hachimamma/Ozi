@@ -14,8 +14,11 @@ Ozi is a multipurpose Discord bot written in Rust using [Poise](https://github.c
 - 🌦 **Weather Info**  
   Get real-time weather updates using the OpenWeather API.
 
-- 🏓 **Ping & Uptime**
+- 🏓 **Ping & Uptime**  
   Check bot latency and uptime.
+
+- 🧹 **Bulk Message Purge**  
+  Use `/purge` to quickly delete multiple messages from a channel.
 
 - ⚡ **Fast & Lightweight**  
   Built in Rust for efficiency and speed.
@@ -69,6 +72,7 @@ Invite Ozi to your server using the OAuth2 URL with the following scopes:
 Once invited, try out some commands:
 - `/ping` – Check Ozi's latency.
 - `/weather <city>` – Get the current weather.
+- `/purge <amount>` – Bulk delete a specified number of messages in a channel (requires Manage Messages permission).
 - `/help` – See all commands.
 
 ---

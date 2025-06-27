@@ -1,5 +1,6 @@
 mod commands;
 
+use commands::purge;
 use poise::serenity_prelude as serenity;
 use dotenv::dotenv;
 use std::env;
@@ -24,6 +25,7 @@ async fn main() {
                 commands::avatar(),
                 commands::choose(),
                 commands::serverinfo(),
+                purge(),
                 commands::weather(),
             ],
             on_error: |err| Box::pin(async move {
@@ -31,11 +33,13 @@ async fn main() {
             }),
             ..Default::default()
         })
-        .setup(|_ctx, _ready, _framework| Box::pin(async move {
-            println!("Ozi Bot is online.");
+        .setup(|ctx, _ready, framework| Box::pin(async move {
+            let guild_id = serenity::GuildId::new(1381641115618377788);
+            poise::builtins::register_in_guild(ctx, &framework.options().commands, guild_id).await?;
+            println!("Ozi Bot is online and commands registered in guild: {}", guild_id);
             Ok(Data {})
         }))
-        .build();
+        .build(); // <-- No .await, no .unwrap
 
     let mut client = serenity::Client::builder(token, intents)
         .framework(framework)

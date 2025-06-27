@@ -4,6 +4,8 @@ use chrono::Local;
 use std::fs::OpenOptions;
 use std::io::Write;
 use poise::serenity_prelude::Mentionable;
+use crate::Data;
+// use anyhow::Error;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
@@ -194,6 +196,35 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
         "**Server Info:**\nName: {}\nID: {}\nOwner: <@{}>\nMembers: {}\nCreated: {}",
         name, guild_id, owner_id, member_count, created
     )).await?;
+    Ok(())
+}
+
+#[poise::command(
+    slash_command,
+    required_permissions = "MANAGE_MESSAGES",
+    description_localized("en-US", "Bulk delete messages in the current channel.")
+)]
+pub async fn purge(
+    ctx: poise::ApplicationContext<'_, Data, Error>,
+    #[description = "Number of messages to delete (max 100)"] amount: u64,
+) -> Result<(), Error> {
+    use poise::serenity_prelude as serenity;
+
+    let amount = amount.clamp(1, 100) as u8; // Clamp to Discord's allowed range
+
+    let channel_id = ctx.channel_id();
+    let messages = channel_id
+        .messages(
+            &ctx.http(),
+            serenity::GetMessages::default().limit(amount)
+        )
+        .await?;
+
+    let message_ids: Vec<_> = messages.iter().map(|msg| msg.id).collect();
+
+    channel_id.delete_messages(&ctx.http(), message_ids).await?;
+
+    ctx.say(format!("Deleted {} messages.", amount)).await?;
     Ok(())
 }
 
