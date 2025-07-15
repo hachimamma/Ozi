@@ -68,6 +68,7 @@ cargo run --release
 Invite Ozi to your server using the OAuth2 URL with the following scopes:
 - `bot`
 - `applications.commands`
+- `manage.messages`
 
 Once invited, try out some commands:
 - `/ping` – Check Ozi's latency.
