@@ -241,7 +241,6 @@ pub async fn purge(
     Ok(())
 }
 
-/// Gets weather for a city
 #[poise::command(slash_command)]
 pub async fn weather(
     ctx: Context<'_>,
@@ -269,5 +268,28 @@ pub async fn weather(
             ctx.say("Failed to fetch weather.").await?;
         }
     }
+    Ok(())
+}
+
+#[poise::command(prefix_command, aliases("oziban", "ozi-ban"))]
+pub async fn ozi_ban(
+    ctx: Context<'_>,
+    #[description = "User to fake ban"] user: serenity::User,
+    #[description = "Reason (optional)"] #[rest] reason: Option<String>,
+) -> Result<(), Error> {
+    let reason = reason
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .unwrap_or("no reason given");
+
+    let response = format!(
+        "👑 Glorious king {} banned {} for: *{}*",
+        ctx.author().mention(),
+        user.mention(),
+        reason
+    );
+
+    ctx.say(response).await?;
     Ok(())
 }

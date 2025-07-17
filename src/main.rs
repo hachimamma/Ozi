@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::env;
 
 mod commands;
-use commands::purge;
+use commands::{purge, ozi_ban};
 
 pub struct Data {}
 
@@ -33,6 +33,7 @@ async fn main() -> Result<(), Error> {
                 commands::serverinfo(),
                 purge(),
                 commands::weather(),
+                ozi_ban(),
             ],
             on_error: |err| Box::pin(async move {
                 let _ = poise::builtins::on_error(err).await;
@@ -49,7 +50,6 @@ async fn main() -> Result<(), Error> {
                         ("sybau", "sybau ts pmo 💔🥀"),
                         ("kakashi", "kakashi hatake chad fr 🗿"),
                         ("hachimamma", "hachimamma chad fr 🗿"),
-                        ("ozi", "ozi top G 🔝"),
                         ("adudakqua", "adu is a bitch."),
                     ]);
 
@@ -64,6 +64,10 @@ async fn main() -> Result<(), Error> {
                 }
                 Ok(())
             }),
+            prefix_options: poise::PrefixFrameworkOptions {
+                prefix: Some("-".into()),
+                ..Default::default()
+            },
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| Box::pin(async move {
