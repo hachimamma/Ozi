@@ -164,7 +164,7 @@ pub async fn avatar(
     Ok(())
 }
 
-/// Picks randomly from a list of options
+/// Picks randomly from a list of options (pls dont judge why i added this)
 #[poise::command(slash_command)]
 pub async fn choose(
     ctx: Context<'_>,
@@ -201,6 +201,7 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(
     slash_command,
+    guild_only,
     required_permissions = "MANAGE_MESSAGES",
     description_localized("en-US", "Bulk delete messages in the current channel.")
 )]
@@ -210,21 +211,33 @@ pub async fn purge(
 ) -> Result<(), Error> {
     use poise::serenity_prelude as serenity;
 
-    let amount = amount.clamp(1, 100) as u8; // Clamp to Discord's allowed range
+    const ALLOWED_ROLE_ID: u64 = 1390227721312927795;
 
+    let member = match ctx.author_member().await {
+        Some(member) => member,
+        None => {
+            ctx.say("⚠️ Could not fetch member info.").await?;
+            return Ok(());
+        }
+    };
+
+    let has_role = member.roles.iter().any(|role| role.get() == ALLOWED_ROLE_ID);
+    if !has_role {
+        ctx.say("❌ You do not have the required role to use this command.").await?;
+        return Ok(());
+    }
+
+    let amount = amount.clamp(1, 100) as u8;
     let channel_id = ctx.channel_id();
+
     let messages = channel_id
-        .messages(
-            &ctx.http(),
-            serenity::GetMessages::default().limit(amount)
-        )
+        .messages(&ctx.http(), serenity::GetMessages::default().limit(amount))
         .await?;
 
     let message_ids: Vec<_> = messages.iter().map(|msg| msg.id).collect();
-
     channel_id.delete_messages(&ctx.http(), message_ids).await?;
 
-    ctx.say(format!("Deleted {} messages.", amount)).await?;
+    ctx.say(format!("✅ Deleted {} messages.", amount)).await?;
     Ok(())
 }
 
