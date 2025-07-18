@@ -278,10 +278,10 @@ pub async fn weather(
     category = "Fun"
 )]
 pub async fn ozi_ban(
-    ctx: Context<'_>,  // ✅ Uses your project's Context<'_>
+    ctx: Context<'_>,
     #[description = "User to fake ban"] user: serenity::User,
     #[description = "Reason (optional)"] #[rest] _reason: Option<String>,
-) -> Result<(), Error> {  // ✅ Uses your project's Error alias
+) -> Result<(), Error> {
     let response = format!("🔨 Banned `{}` indefinitely", user.name);
     ctx.say(response).await?;
     Ok(())
