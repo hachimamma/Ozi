@@ -65,7 +65,7 @@ async fn main() -> Result<(), Error> {
                 Ok(())
             }),
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some("-".into()),
+                prefix: Some(".".into()),
                 ..Default::default()
             },
             ..Default::default()

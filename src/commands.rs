@@ -10,10 +10,10 @@ use crate::Data;
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
 
-
+/// Replies with a greeting message (dont even use this)
 #[poise::command(slash_command)]
 pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say(format!("Hello {}! 👋", ctx.author().name)).await?;
+    ctx.say(format!("Sup {}, what's good today? 👋", ctx.author().name)).await?;
     Ok(())
 }
 
@@ -116,7 +116,7 @@ pub async fn roll(
     Ok(())
 }
 
-/// Bot repeats your message
+/// Bot repeats your message (do sus things with this)
 #[poise::command(slash_command)]
 pub async fn say(
     ctx: Context<'_>,
@@ -164,7 +164,7 @@ pub async fn avatar(
     Ok(())
 }
 
-/// Picks randomly from a list of options (pls dont judge why i added this)
+/// Picks randomly from a list of options (dont ask why i added this)
 #[poise::command(slash_command)]
 pub async fn choose(
     ctx: Context<'_>,
@@ -271,25 +271,18 @@ pub async fn weather(
     Ok(())
 }
 
-#[poise::command(prefix_command, aliases("oziban", "ozi-ban"))]
+#[poise::command(
+    prefix_command,
+    aliases("oziban", "ozi_ban"),
+    rename = "ban",
+    category = "Fun"
+)]
 pub async fn ozi_ban(
-    ctx: Context<'_>,
+    ctx: Context<'_>,  // ✅ Uses your project's Context<'_>
     #[description = "User to fake ban"] user: serenity::User,
-    #[description = "Reason (optional)"] #[rest] reason: Option<String>,
-) -> Result<(), Error> {
-    let reason = reason
-        .as_deref()
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .unwrap_or("no reason given");
-
-    let response = format!(
-        "👑 Glorious king {} banned {} for: *{}*",
-        ctx.author().mention(),
-        user.mention(),
-        reason
-    );
-
+    #[description = "Reason (optional)"] #[rest] _reason: Option<String>,
+) -> Result<(), Error> {  // ✅ Uses your project's Error alias
+    let response = format!("🔨 Banned `{}` indefinitely", user.name);
     ctx.say(response).await?;
     Ok(())
 }
