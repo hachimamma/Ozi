@@ -4,8 +4,8 @@ use chrono::Local;
 use std::fs::OpenOptions;
 use std::io::Write;
 use poise::serenity_prelude::Mentionable;
+use poise::CreateReply;
 use crate::Data;
-// use anyhow::Error;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
@@ -13,7 +13,7 @@ pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
 /// Replies with a greeting message (dont even use this)
 #[poise::command(slash_command)]
 pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say(format!("Sup {}, what's good today? 👋", ctx.author().name)).await?;
+    ctx.send(CreateReply::default().content(format!("Sup {}, what's good today? 👋", ctx.author().name)).ephemeral(true)).await?;
     Ok(())
 }
 
@@ -56,7 +56,7 @@ pub async fn ship(
         user1.name, user2.name
     );
 
-    ctx.say(&response).await?;
+    ctx.send(CreateReply::default().content(response)).await?;
 
     let mut file = OpenOptions::new()
         .append(true)
@@ -86,7 +86,7 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
     let node_name = "Node2.carlbot-prod.local";
 
     let response = format!(
-        "Pong!\nCluster {cluster_id}: {cluster_avg_latency:.2}ms (avg)\nShard {shard_id}: {latency}\nNode: {node_name}",
+        "Pong! 🏓\nCluster {cluster_id}: {cluster_avg_latency:.2}ms (avg)\nShard {shard_id}: {latency}\nNode: {node_name}",
         cluster_id = cluster_id,
         cluster_avg_latency = cluster_avg_latency,
         shard_id = shard_id,
@@ -94,7 +94,7 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
         node_name = node_name,
     );
 
-    ctx.say(response).await?;
+    ctx.send(CreateReply::default().content(response)).await?;
     Ok(())
 }
 
@@ -108,11 +108,11 @@ pub async fn roll(
     let min = min.unwrap_or(1);
     let max = max.unwrap_or(6);
     if min > max {
-        ctx.say("Minimum should be less than or equal to maximum!").await?;
+        ctx.send(CreateReply::default().content("Minimum should be less than or equal to maximum, u baka!")).await?;
         return Ok(());
     }
     let roll = rand::thread_rng().gen_range(min..=max);
-    ctx.say(format!("🎲 You rolled: {}", roll)).await?;
+    ctx.send(CreateReply::default().content(format!("You rolled: {}", roll))).await?;
     Ok(())
 }
 
@@ -122,7 +122,7 @@ pub async fn say(
     ctx: Context<'_>,
     #[description = "Message for the bot to repeat"] text: String,
 ) -> Result<(), Error> {
-    ctx.say(text).await?;
+    ctx.send(CreateReply::default().content(text)).await?;
     Ok(())
 }
 
@@ -148,7 +148,7 @@ pub async fn userinfo(
         Created: {}",
         user.name, user.name, discrim, user.id, mention, created
     );
-    ctx.say(response).await?;
+    ctx.send(CreateReply::default().content(response)).await?;
     Ok(())
 }
 
@@ -160,7 +160,8 @@ pub async fn avatar(
 ) -> Result<(), Error> {
     let user = user.as_ref().unwrap_or(ctx.author());
     let avatar_url = user.avatar_url().unwrap_or_else(|| user.default_avatar_url());
-    ctx.say(format!("{}'s avatar:\n{}", user.name, avatar_url)).await?;
+
+    ctx.send(CreateReply::default().content(avatar_url)).await?;
     Ok(())
 }
 
@@ -172,11 +173,11 @@ pub async fn choose(
 ) -> Result<(), Error> {
     let choices: Vec<_> = options.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
     if choices.is_empty() {
-        ctx.say("Please provide at least one option!").await?;
+        ctx.send(CreateReply::default().content("Please provide at least one option, baka!")).await?;
         return Ok(());
     }
     let choice = choices[rand::thread_rng().gen_range(0..choices.len())];
-    ctx.say(format!("I choose: **{}**", choice)).await?;
+    ctx.send(CreateReply::default().content(format!("I choose: **{}**", choice))).await?;
     Ok(())
 }
 
@@ -192,10 +193,10 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
             guild.id.created_at().format("%Y-%m-%d %H:%M:%S").to_string()
         )
     };
-    ctx.say(format!(
+    ctx.send(CreateReply::default().content(format!(
         "**Server Info:**\nName: {}\nID: {}\nOwner: <@{}>\nMembers: {}\nCreated: {}",
         name, guild_id, owner_id, member_count, created
-    )).await?;
+    ))).await?;
     Ok(())
 }
 
@@ -216,14 +217,16 @@ pub async fn purge(
     let member = match ctx.author_member().await {
         Some(member) => member,
         None => {
-            ctx.say("⚠️ Could not fetch member info.").await?;
+            ctx.send(CreateReply::default().content("Could not fetch member info. Sowwy :("))
+                .await?;
             return Ok(());
         }
     };
 
     let has_role = member.roles.iter().any(|role| role.get() == ALLOWED_ROLE_ID);
     if !has_role {
-        ctx.say("❌ You do not have the required role to use this command.").await?;
+        ctx.send(CreateReply::default().content("You do not have the required role to use this command, go away hmph!"))
+            .await?;
         return Ok(());
     }
 
@@ -237,7 +240,7 @@ pub async fn purge(
     let message_ids: Vec<_> = messages.iter().map(|msg| msg.id).collect();
     channel_id.delete_messages(&ctx.http(), message_ids).await?;
 
-    ctx.say(format!("✅ Deleted {} messages.", amount)).await?;
+    ctx.send(CreateReply::default().content(format!("Deleted {} messages! Praise me UwU", amount))).await?;
     Ok(())
 }
 
@@ -246,9 +249,9 @@ pub async fn weather(
     ctx: Context<'_>,
     #[description = "City name"] city: String,
 ) -> Result<(), Error> {
-    let api_key = std::env::var("OPENWEATHERMAP_API_KEY").unwrap_or_else(|_| "YOUR_API_KEY_HERE".into());
-    if api_key == "YOUR_API_KEY_HERE" {
-        ctx.say("Weather command not configured. Please set OPENWEATHERMAP_API_KEY in your .env.").await?;
+    let api_key = std::env::var("WEATHER_API").unwrap_or_else(|_| "1e4d4aa078d7c4113bcbde15470b24b4".into());
+    if api_key == "1e4d4aa078d7c4113bcbde15470b24b4" {
+        ctx.send(CreateReply::default().content("Weather command not configured. Please set WEATHER_API in your .env.")).await?;
         return Ok(());
     }
     let url = format!("https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric", city, api_key);
@@ -259,15 +262,95 @@ pub async fn weather(
                 let data: serde_json::Value = r.json().await.unwrap_or_default();
                 let temp = data["main"]["temp"].as_f64().unwrap_or(0.0);
                 let desc = data["weather"][0]["description"].as_str().unwrap_or("unknown");
-                ctx.say(format!("Weather in {}: {}°C, {}", city, temp, desc)).await?;
+                ctx.send(CreateReply::default().content(format!("Weather in {}: {}°C, {}", city, temp, desc))).await?;
             } else {
-                ctx.say("City not found or API error!").await?;
+                ctx.send(CreateReply::default().content("City not found or API error!")).await?;
             }
         }
         Err(_) => {
-            ctx.say("Failed to fetch weather.").await?;
+            ctx.send(CreateReply::default().content("Failed to fetch weather.")).await?;
         }
     }
+    Ok(())
+}
+
+#[poise::command(slash_command, subcommands("spotify_status"))]
+pub async fn spotify(_: Context<'_>) -> Result<(), Error> {
+    Ok(())
+}
+
+#[poise::command(slash_command, rename = "status")]
+pub async fn spotify_status(
+    ctx: Context<'_>,
+    #[description = "User to check (optional)"] user: Option<serenity::User>,
+) -> Result<(), Error> {
+    let guild_id = match ctx.guild_id() {
+        Some(id) => id,
+        None => {
+            ctx.send(CreateReply::default()
+                .content("This command can only be used in a server.")
+                .ephemeral(true)).await?;
+            return Ok(());
+        }
+    };
+
+    let target = user.unwrap_or_else(|| ctx.author().clone());
+
+    let presence = ctx.serenity_context()
+        .cache
+        .guild(guild_id)
+        .and_then(|guild| guild.presences.get(&target.id).cloned());
+
+    let presence = match presence {
+        Some(p) => p,
+        None => {
+            ctx.send(CreateReply::default()
+                .content("This user has no presence info available.")).await?;
+            return Ok(());
+        }
+    };
+
+    let activity = match presence.activities.iter().find(|a| a.name == "Spotify") {
+        Some(a) => a,
+        None => {
+            ctx.send(CreateReply::default()
+                .content("No Spotify activity found for this user.")).await?;
+            return Ok(());
+        }
+    };
+
+    let song = activity.details.as_deref().unwrap_or("Unknown title");
+    let artist = activity.state.as_deref().unwrap_or("Unknown artist");
+
+    let (bar, percentage) = if let Some(ts) = &activity.timestamps {
+        if let (Some(start_ms), Some(end_ms)) = (ts.start, ts.end) {
+            let now_ms = chrono::Utc::now().timestamp_millis() as u64;
+            let progress = (now_ms.saturating_sub(start_ms)) as f64;
+            let total = (end_ms - start_ms) as f64;
+            let pct = (progress / total).clamp(0.0, 1.0);
+            let pct_display = (pct * 100.0).round() as u8;
+            let filled = (pct * 20.0).round() as usize;
+            let bar_str = format!(
+                "[{}{}] {}%",
+                "■".repeat(filled),
+                "—".repeat(20 - filled),
+                pct_display
+            );
+            (bar_str, pct_display)
+        } else {
+            ("[waiting…]".into(), 0)
+        }
+    } else {
+        ("[No timestamp available]".into(), 0)
+    };
+
+    // Build reply message
+    let reply = format!(
+        "**{}**\n{}\n{}\n",
+        song, artist, bar
+    );
+
+    ctx.send(CreateReply::default().content(reply)).await?;
     Ok(())
 }
 
@@ -275,7 +358,7 @@ pub async fn weather(
     prefix_command,
     aliases("oziban", "ozi_ban"),
     rename = "ban",
-    category = "Fun"
+    category = "Dumb"
 )]
 pub async fn ozi_ban(
     ctx: Context<'_>,

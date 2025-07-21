@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::env;
 
 mod commands;
-use commands::{purge, ozi_ban};
+use commands::{purge, ozi_ban, spotify_status};
 
 pub struct Data {}
 
@@ -17,23 +17,26 @@ async fn main() -> Result<(), Error> {
     let token = env::var("DISCORD_TOKEN").expect("Expected DISCORD_TOKEN in .env");
 
     let intents = serenity::GatewayIntents::non_privileged()
-        | serenity::GatewayIntents::MESSAGE_CONTENT;
+        | serenity::GatewayIntents::MESSAGE_CONTENT
+        | serenity::GatewayIntents::GUILD_PRESENCES
+        | serenity::GatewayIntents::GUILD_MEMBERS;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
                 commands::hello(),
-                commands::ship(),
-                commands::ping(),
                 commands::roll(),
                 commands::say(),
                 commands::userinfo(),
                 commands::avatar(),
                 commands::choose(),
                 commands::serverinfo(),
-                purge(),
                 commands::weather(),
+                purge(),
                 ozi_ban(),
+                commands::spotify(),
+                commands::spotify_status(),
+                commands::ping(),
             ],
             on_error: |err| Box::pin(async move {
                 let _ = poise::builtins::on_error(err).await;
