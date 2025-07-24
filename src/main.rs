@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::env;
 
 mod commands;
-use commands::{purge, ozi_ban, spotify_status};
+use commands::{purge, ozi_ban};
 
 pub struct Data {}
 
