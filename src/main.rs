@@ -34,8 +34,6 @@ async fn main() -> Result<(), Error> {
                 commands::weather(),
                 purge(),
                 ozi_ban(),
-                commands::spotify(),
-                commands::spotify_status(),
                 commands::ping(),
             ],
             on_error: |err| Box::pin(async move {
