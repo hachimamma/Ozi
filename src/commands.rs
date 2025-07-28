@@ -254,7 +254,7 @@ pub async fn weather(
         ctx.send(CreateReply::default().content("Weather command not configured. Please set WEATHER_API in your .env.")).await?;
         return Ok(());
     }
-    let url = format!("https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric", city, api_key);
+    let url = format!("http://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=no", api_key, city);
     let resp = reqwest::get(&url).await;
     match resp {
         Ok(r) => {
