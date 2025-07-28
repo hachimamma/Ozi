@@ -51,6 +51,7 @@ async fn main() -> Result<(), Error> {
                         ("sybau", "sybau ts pmo 💔🥀"),
                         ("kakashi", "kakashi hatake chad fr 🗿"),
                         ("hachimamma", "hachimamma chad fr 🗿"),
+                        ("wel", "Welcome, nya! 😸")
                     ]);
 
                     for (trigger, response) in tags.iter() {
