@@ -247,6 +247,7 @@ pub async fn weather(
     ctx: Context<'_>,
     #[description = "City name"] city: String,
 ) -> Result<(), Error> {
+<<<<<<< HEAD
     let api_key = match std::env::var("WEATHERAPI_KEY") {
         Ok(key) => key,
         Err(_) => {
@@ -283,6 +284,25 @@ pub async fn weather(
                 "City not found or API error!\n```{}```",
                 err_text
             ))).await?;
+=======
+    let api_key = std::env::var("WEATHER_API").unwrap_or_else(|_| "1e4d4aa078d7c4113bcbde15470b24b4".into());
+    if api_key == "1e4d4aa078d7c4113bcbde15470b24b4" {
+        ctx.send(CreateReply::default().content("Weather command not configured. Please set WEATHER_API in your .env.")).await?;
+        return Ok(());
+    }
+    let url = format!("http://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=no", api_key, city);
+    let resp = reqwest::get(&url).await;
+    match resp {
+        Ok(r) => {
+            if r.status().is_success() {
+                let data: serde_json::Value = r.json().await.unwrap_or_default();
+                let temp = data["main"]["temp"].as_f64().unwrap_or(0.0);
+                let desc = data["weather"][0]["description"].as_str().unwrap_or("unknown");
+                ctx.send(CreateReply::default().content(format!("Weather in {}: {}°C, {}", city, temp, desc))).await?;
+            } else {
+                ctx.send(CreateReply::default().content("City not found or API error!")).await?;
+            }
+>>>>>>> 7915c4eb1d186086abcfe1fd43842fdfad1a28d8
         }
         Err(_) => {
             ctx.send(CreateReply::default().content("Failed to fetch weather.")).await?;
