@@ -10,7 +10,7 @@ use crate::Data;
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
 
-/// Replies with a greeting message (dont even use this)
+/// Command to greet the user
 #[poise::command(slash_command)]
 pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
     ctx.send(CreateReply::default().content(format!("Sup {}, what's good today? 👋", ctx.author().name)).ephemeral(true)).await?;
@@ -74,7 +74,7 @@ pub async fn ship(
     Ok(())
 }
 
-/// Replies with pong and latency
+/// Command to ping the bot and get latency info
 #[poise::command(slash_command, prefix_command)]
 pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
     let latency = ctx.ping().await;
@@ -87,18 +87,13 @@ pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 
     let response = format!(
         "Pong! 🏓\nCluster {cluster_id}: {cluster_avg_latency:.2}ms (avg)\nShard {shard_id}: {latency}\nNode: {node_name}",
-        cluster_id = cluster_id,
-        cluster_avg_latency = cluster_avg_latency,
-        shard_id = shard_id,
-        latency = latency,
-        node_name = node_name,
     );
 
     ctx.send(CreateReply::default().content(response)).await?;
     Ok(())
 }
 
-/// Rolls a dice between min and max
+///Find a random number between min and max
 #[poise::command(slash_command)]
 pub async fn roll(
     ctx: Context<'_>,
@@ -116,7 +111,7 @@ pub async fn roll(
     Ok(())
 }
 
-/// Bot repeats your message (do sus things with this)
+/// Command to repeat a message
 #[poise::command(slash_command)]
 pub async fn say(
     ctx: Context<'_>,
@@ -126,7 +121,7 @@ pub async fn say(
     Ok(())
 }
 
-/// Shows info about a mentioned user
+/// Command to show user info
 #[poise::command(slash_command)]
 pub async fn userinfo(
     ctx: Context<'_>,
@@ -152,7 +147,7 @@ pub async fn userinfo(
     Ok(())
 }
 
-/// Shows a user's avatar
+/// Command to show user avatar
 #[poise::command(slash_command)]
 pub async fn avatar(
     ctx: Context<'_>,
@@ -165,7 +160,7 @@ pub async fn avatar(
     Ok(())
 }
 
-/// Picks randomly from a list of options (dont ask why i added this)
+/// Command to choose a random option from a list
 #[poise::command(slash_command)]
 pub async fn choose(
     ctx: Context<'_>,
@@ -181,6 +176,7 @@ pub async fn choose(
     Ok(())
 }
 
+/// Command to show server info
 #[poise::command(slash_command, guild_only)]
 pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
     let (guild_id, name, owner_id, member_count, created) = {
@@ -200,6 +196,7 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
+/// Command to purge messages in a channel
 #[poise::command(
     slash_command,
     guild_only,
@@ -244,36 +241,58 @@ pub async fn purge(
     Ok(())
 }
 
+/// Command to get weather information for a city
 #[poise::command(slash_command)]
 pub async fn weather(
     ctx: Context<'_>,
     #[description = "City name"] city: String,
 ) -> Result<(), Error> {
-    let api_key = std::env::var("WEATHER_API").unwrap_or_else(|_| "1e4d4aa078d7c4113bcbde15470b24b4".into());
-    if api_key == "1e4d4aa078d7c4113bcbde15470b24b4" {
-        ctx.send(CreateReply::default().content("Weather command not configured. Please set WEATHER_API in your .env.")).await?;
-        return Ok(());
-    }
-    let url = format!("https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric", city, api_key);
-    let resp = reqwest::get(&url).await;
-    match resp {
-        Ok(r) => {
-            if r.status().is_success() {
-                let data: serde_json::Value = r.json().await.unwrap_or_default();
-                let temp = data["main"]["temp"].as_f64().unwrap_or(0.0);
-                let desc = data["weather"][0]["description"].as_str().unwrap_or("unknown");
-                ctx.send(CreateReply::default().content(format!("Weather in {}: {}°C, {}", city, temp, desc))).await?;
-            } else {
-                ctx.send(CreateReply::default().content("City not found or API error!")).await?;
-            }
+    let api_key = match std::env::var("WEATHERAPI_KEY") {
+        Ok(key) => key,
+        Err(_) => {
+            ctx.send(CreateReply::default().content(
+                "Weather command not configured. Please set WEATHERAPI_KEY in your .env.",
+            ))
+            .await?;
+            return Ok(());
+        }
+    };
+
+    let encoded_city = urlencoding::encode(&city);
+    let url = format!(
+        "http://api.weatherapi.com/v1/current.json?key={}&q={}&aqi=no",
+        api_key, encoded_city
+    );
+
+    println!("DEBUG URL: {}", url);
+
+    match reqwest::get(&url).await {
+        Ok(resp) if resp.status().is_success() => {
+            let json: serde_json::Value = resp.json().await.unwrap_or_default();
+            let temp = json["current"]["temp_c"].as_f64().unwrap_or(0.0);
+            let condition = json["current"]["condition"]["text"]
+                .as_str()
+                .unwrap_or("unknown");
+
+            let msg = format!("Weather in **{}**: **{}°C**, {}", city, temp, condition);
+            ctx.send(CreateReply::default().content(msg)).await?;
+        }
+        Ok(resp) => {
+            let err_text = resp.text().await.unwrap_or_else(|_| "No error details.".into());
+            ctx.send(CreateReply::default().content(format!(
+                "City not found or API error!\n```{}```",
+                err_text
+            ))).await?;
         }
         Err(_) => {
             ctx.send(CreateReply::default().content("Failed to fetch weather.")).await?;
         }
     }
+
     Ok(())
 }
 
+/// Command to fake ban a user
 #[poise::command(
     prefix_command,
     aliases("oziban", "ozi_ban"),
