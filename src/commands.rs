@@ -247,11 +247,11 @@ pub async fn weather(
     ctx: Context<'_>,
     #[description = "City name"] city: String,
 ) -> Result<(), Error> {
-    let api_key = match std::env::var("WEATHERAPI_KEY") {
+    let api_key = match std::env::var("WEATHER_API") {
         Ok(key) => key,
         Err(_) => {
             ctx.send(CreateReply::default().content(
-                "Weather command not configured. Please set WEATHERAPI_KEY in your .env.",
+                "Weather command not configured. Please set WEATHER_API in your .env.",
             ))
             .await?;
             return Ok(());
