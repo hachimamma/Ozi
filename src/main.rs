@@ -32,6 +32,7 @@ async fn main() -> Result<(), Error> {
                 commands::choose(),
                 commands::serverinfo(),
                 commands::weather(),
+                commands::ship(),
                 purge(),
                 ozi_ban(),
                 commands::ping(),
