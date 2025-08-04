@@ -99,4 +99,4 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information
 
 - [Serenity](https://github.com/serenity-rs/serenity)
 - [Poise](https://github.com/serenity-rs/poise)
-- [OpenWeather API](https://openweathermap.org/api)
+- [Weather API](https://weatherapi.com)
