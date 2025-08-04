@@ -48,7 +48,7 @@ Create a `.env` file in the root directory:
 
 ```env
 DISCORD_TOKEN=your_discord_token_here
-OPENWEATHER_API_KEY=your_openweather_key_here
+WEATHER_API_KEY=your_openweather_key_here
 ```
 
 ### 4. Run the Bot
