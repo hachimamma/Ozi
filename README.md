@@ -51,8 +51,6 @@ DISCORD_TOKEN=your_discord_token_here
 OPENWEATHER_API_KEY=your_openweather_key_here
 ```
 
-> **Note:** Never commit your `.env` file! It is ignored by `.gitignore` by default.
-
 ### 4. Run the Bot
 
 Make sure you have [Rust](https://www.rust-lang.org/tools/install) installed, then run:
