@@ -8,22 +8,22 @@ Ozi is a multipurpose Discord bot written in Rust using [Poise](https://github.c
 
 ## Features
 
-- 🟢 **Slash Commands**  
+- **Slash Commands**  
   Clean, modern Discord interaction using slash commands.
 
-- 🌦 **Weather Info**  
+- **Weather Info**  
   Get real-time weather updates using the OpenWeather API.
 
-- 🏓 **Ping & Uptime**  
+- **Ping & Uptime**  
   Check bot latency and uptime.
 
-- 🧹 **Bulk Message Purge**  
+- **Bulk Message Purge**  
   Use `/purge` to quickly delete multiple messages from a channel.
 
-- ⚡ **Fast & Lightweight**  
+- **Fast & Lightweight**  
   Built in Rust for efficiency and speed.
 
-- 🛠 **Easy Customization**  
+- **Easy Customization**  
   Add your own commands and features with ease.
 
 ---
