@@ -73,7 +73,7 @@ async fn main() -> Result<(), Error> {
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| Box::pin(async move {
-            let guild_id = serenity::GuildId::new(1263067254153805905);
+            let guild_id = serenity::GuildId::new(1381641115618377788);
             poise::builtins::register_in_guild(ctx, &framework.options().commands, guild_id).await?;
             println!("Ozi Bot is online and commands registered in guild: {}", guild_id);
             Ok(Data {})
