@@ -213,7 +213,7 @@ pub async fn purge(
 
     let member = match ctx.author_member().await {
         Some(member) => member,
-        None => {
+        _none => {
             ctx.send(CreateReply::default().content("Could not fetch member info. Sowwy :("))
                 .await?;
             return Ok(());
