@@ -5,7 +5,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use poise::serenity_prelude::Mentionable;
 use poise::CreateReply;
-use crate::Data;
+use crate::helpers::{is_mod, load_config, save_config};
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, crate::Data, Error>;
@@ -200,30 +200,19 @@ pub async fn serverinfo(ctx: Context<'_>) -> Result<(), Error> {
 #[poise::command(
     slash_command,
     guild_only,
-    required_permissions = "MANAGE_MESSAGES",
     description_localized("en-US", "Bulk delete messages in the current channel.")
 )]
 pub async fn purge(
-    ctx: poise::ApplicationContext<'_, Data, Error>,
+    ctx: Context<'_>,
     #[description = "Number of messages to delete (max 100)"] amount: u64,
 ) -> Result<(), Error> {
     use poise::serenity_prelude as serenity;
 
-    const ALLOWED_ROLE_ID: u64 = 1390227721312927795;
-
-    let member = match ctx.author_member().await {
-        Some(member) => member,
-        _none => {
-            ctx.send(CreateReply::default().content("Could not fetch member info. Sowwy :("))
-                .await?;
-            return Ok(());
-        }
-    };
-
-    let has_role = member.roles.iter().any(|role| role.get() == ALLOWED_ROLE_ID);
-    if !has_role {
-        ctx.send(CreateReply::default().content("You do not have the required role to use this command, go away hmph!"))
-            .await?;
+    let guild_id = ctx.guild_id().expect("This command is guild only");
+    let is_moderator = is_mod(ctx.serenity_context(), guild_id, ctx.author().id).await?;
+    
+    if !is_moderator {
+        ctx.send(CreateReply::default().content("You do not have permission to use this command! Hmph!")).await?;
         return Ok(());
     }
 
@@ -292,7 +281,6 @@ pub async fn weather(
     Ok(())
 }
 
-/// Command to fake ban a user
 #[poise::command(
     prefix_command,
     aliases("oziban", "ozi_ban"),
@@ -306,5 +294,50 @@ pub async fn ozi_ban(
 ) -> Result<(), Error> {
     let response = format!("🔨 Banned `{}` indefinitely", user.name);
     ctx.say(response).await?;
+    Ok(())
+}
+
+/// Command to setup tsundere messages channel
+#[poise::command(
+    slash_command,
+    guild_only,
+    description_localized("en-US", "Set the channel for tsundere messages")
+)]
+pub async fn setup_tsundere(
+    ctx: Context<'_>,
+    #[description = "Channel for tsundere messages"] channel: serenity::GuildChannel,
+) -> Result<(), Error> {
+    // Check if user is mod
+    let guild_id = ctx.guild_id().expect("This command is guild only");
+    let is_moderator = is_mod(ctx.serenity_context(), guild_id, ctx.author().id).await?;
+    
+    if !is_moderator {
+        ctx.send(CreateReply::default().content("You do not have permission to use this command! B-baka!")).await?;
+        return Ok(());
+    }
+
+    // Load existing config
+    let mut config = match load_config() {
+        Ok(config) => config,
+        Err(e) => {
+            ctx.send(CreateReply::default().content(format!("Failed to load config: {}", e))).await?;
+            return Ok(());
+        }
+    };
+    
+    // Update the channel ID
+    config.tsundere_channel_id = Some(channel.id.get());
+    
+    // Save the config
+    if let Err(e) = save_config(&config) {
+        ctx.send(CreateReply::default().content(format!("Failed to save config: {}", e))).await?;
+        return Ok(());
+    }
+
+    ctx.send(CreateReply::default().content(format!(
+        "Tsundere messages will be sent to {}! It's not like I wanted to send messages there or anything!",
+        channel.mention()
+    ))).await?;
+    
     Ok(())
 }

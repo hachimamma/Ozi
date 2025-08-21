@@ -1,12 +1,5 @@
-# Ignore environment variable files
 .env
-
-# Rust build output
 /target
-
-# VSCode settings (optional)
 .vscode/
-
-# OS files (optional)
 .DS_Store
 Thumbs.db
