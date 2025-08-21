@@ -25,10 +25,10 @@ pub async fn _has_role(ctx: &serenity::Context, guild_id: serenity::GuildId, use
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BotConfig {
-    pub tsundere_channel_id: Option<u64>,
+    pub tsun_chid: Option<u64>,
 }
 
-pub fn load_config() -> Result<BotConfig, Box<dyn std::error::Error + Send + Sync>> {
+pub fn load_conf() -> Result<BotConfig, Box<dyn std::error::Error + Send + Sync>> {
     match File::open("bot_config.json") {
         Ok(file) => {
             let reader = BufReader::new(file);
@@ -37,14 +37,14 @@ pub fn load_config() -> Result<BotConfig, Box<dyn std::error::Error + Send + Syn
         }
         Err(_) => {
             // File doesn't exist, create default config
-            let default_config = BotConfig { tsundere_channel_id: None };
-            save_config(&default_config)?;
+            let default_config = BotConfig { tsun_chid: None };
+            save_conf(&default_config)?;
             Ok(default_config)
         }
     }
 }
 
-pub fn save_config(config: &BotConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub fn save_conf(config: &BotConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let file = File::create("bot_config.json")?;
     let writer = BufWriter::new(file);
     serde_json::to_writer_pretty(writer, config)?;
