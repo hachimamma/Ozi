@@ -29,17 +29,19 @@ pub struct BotConfig {
 }
 
 pub fn load_config() -> Result<BotConfig, Box<dyn std::error::Error + Send + Sync>> {
-    let file = File::open("bot_config.json").unwrap_or_else(|_| {
-        // Create default config if file doesn't exist
-        let default_config = BotConfig { tsundere_channel_id: None };
-        let file = File::create("bot_config.json").expect("Failed to create config file");
-        serde_json::to_writer_pretty(BufWriter::new(file), &default_config).expect("Failed to write default config");
-        File::open("bot_config.json").expect("Failed to open newly created config file")
-    });
-    
-    let reader = BufReader::new(file);
-    let config: BotConfig = serde_json::from_reader(reader)?;
-    Ok(config)
+    match File::open("bot_config.json") {
+        Ok(file) => {
+            let reader = BufReader::new(file);
+            let config: BotConfig = serde_json::from_reader(reader)?;
+            Ok(config)
+        }
+        Err(_) => {
+            // File doesn't exist, create default config
+            let default_config = BotConfig { tsundere_channel_id: None };
+            save_config(&default_config)?;
+            Ok(default_config)
+        }
+    }
 }
 
 pub fn save_config(config: &BotConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

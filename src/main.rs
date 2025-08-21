@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 
 mod commands;
 mod helpers;
-use commands::{purge, ozi_ban};
+use commands::{purge, ozi_ban, setup_tsundere};
+use helpers::{load_config};
 
 #[derive(Clone)]
 pub struct Data {
@@ -35,7 +36,24 @@ fn load_tsundere_messages() -> Result<Vec<String>, Error> {
 async fn start_tsundere_timer(ctx: serenity::Context, data: Arc<Data>) {
     let http = ctx.http.clone();
     
-    let startup_channel_id = serenity::ChannelId::new(1263067254803796030);
+    // Load config to get the channel ID
+    let config = match load_config() {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("Failed to load config: {}", e);
+            return;
+        }
+    };
+    
+    let channel_id = match config.tsundere_channel_id {
+        Some(id) => serenity::ChannelId::new(id),
+        _none => {
+            println!("No tsundere channel configured. Tsundere messages disabled. Use /setup_tsundere to enable.");
+            return;
+        }
+    };
+    
+    // Send a random startup message immediately
     if !data.tsundere_messages.is_empty() {
         let random_index = {
             let mut rng = rand::thread_rng();
@@ -44,7 +62,7 @@ async fn start_tsundere_timer(ctx: serenity::Context, data: Arc<Data>) {
         
         let random_message = &data.tsundere_messages[random_index];
         
-        if let Err(e) = startup_channel_id.say(&http, random_message).await {
+        if let Err(e) = channel_id.say(&http, random_message).await {
             eprintln!("Error sending startup message: {}", e);
         }
     }
@@ -67,8 +85,6 @@ async fn start_tsundere_timer(ctx: serenity::Context, data: Arc<Data>) {
                 
                 let random_message = &data.tsundere_messages[random_index];
                 
-                let channel_id = serenity::ChannelId::new(1263067254803796030);
-                
                 if let Err(e) = channel_id.say(&http, random_message).await {
                     eprintln!("Error sending tsundere message: {}", e);
                 }
@@ -85,6 +101,17 @@ async fn main() -> Result<(), Error> {
         Ok(messages) => messages,
         Err(_) => {
             println!("tsu.json not found, creating default file...");
+            // You need to create the default file here first
+            let default_messages = TsundereConfig {
+                messages: vec![
+                    "B-baka! It's not like I wanted to talk to you or anything!".to_string(),
+                    "Hmph! Don't get the wrong idea, I just happened to be here!".to_string(),
+                    // ... add more default messages
+                ],
+            };
+            let file = File::create("tsu.json")?;
+            serde_json::to_writer_pretty(file, &default_messages)?;
+            println!("Created default tsu.json file");
             load_tsundere_messages()?
         }
     };
@@ -111,7 +138,7 @@ async fn main() -> Result<(), Error> {
                 purge(),
                 ozi_ban(),
                 commands::ping(),
-                commands::setup_tsundere(),
+                setup_tsundere(),
             ],
             on_error: |err| Box::pin(async move {
                 let _ = poise::builtins::on_error(err).await;
